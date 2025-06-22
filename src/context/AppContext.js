@@ -5,12 +5,11 @@ import { auth, db } from '../lib/firebase';
 import { generateContent } from '../lib/gemini';
 
 const AppContext = createContext();
-const ADMIN_EMAIL = "admin@example.com";
 
 const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Only for initial auth load
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [articles, setArticles] = useState([]);
     const [filters, setFilters] = useState({ keyword: '', author: '', date: '', category: '' });
@@ -31,14 +30,23 @@ const AppProvider = ({ children }) => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            console.log("Auth state changed:", currentUser);
+            if (currentUser) {
+                console.log("User Email:", currentUser.email);
+                console.log("Admin Email Env:", process.env.REACT_APP_ADMIN_EMAIL);
+                console.log("Is Admin?", currentUser.email === process.env.REACT_APP_ADMIN_EMAIL);
+            }
             setUser(currentUser);
-            setIsAdmin(currentUser?.email === ADMIN_EMAIL);
+            setIsAdmin(currentUser?.email === process.env.REACT_APP_ADMIN_EMAIL);
+            setLoading(false); // Stop initial loading once auth state is resolved
         });
         return () => unsubscribe();
     }, []);
 
     useEffect(() => {
-        setLoading(true);
+        // Don't fetch until the initial auth check is complete
+        if (loading) return;
+
         const fetchArticles = async () => {
             const { keyword, category, date } = filters;
             const apiKey = process.env.REACT_APP_NEWS_API_KEY;
@@ -56,6 +64,9 @@ const AppProvider = ({ children }) => {
 
             try {
                 const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
 
                 if (data.status === "ok") {
@@ -78,15 +89,15 @@ const AppProvider = ({ children }) => {
                     setArticles([]);
                 }
             } catch (e) {
-                setError("An error occurred while fetching news.");
+                console.error("An error occurred while fetching news:", e);
+                setError("An error occurred while fetching news. Please check the console for details.");
                 setArticles([]);
-            } finally {
-                setLoading(false);
             }
+            // No finally block to toggle loading state
         };
 
         fetchArticles();
-    }, [filters]);
+    }, [filters, loading]); // Effect runs when filters change or initial load finishes
 
     useEffect(() => {
         if (isAdmin && user) {
@@ -122,8 +133,9 @@ const AppProvider = ({ children }) => {
         aiModalState, 
         setAiModalState, 
         generateSummary, 
-        setFilters
-    }), [user, isAdmin, loading, isDarkMode, articles, payoutRate, error, aiModalState, generateSummary, updatePayoutRate]);
+        setFilters,
+        filters
+    }), [user, isAdmin, loading, isDarkMode, setIsDarkMode, articles, payoutRate, updatePayoutRate, error, aiModalState, setAiModalState, generateSummary, setFilters, filters]);
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

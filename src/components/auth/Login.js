@@ -1,9 +1,12 @@
-import React from 'react';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import React, { useState } from 'react';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { FcGoogle } from 'react-icons/fc';
 
 const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
     const handleGoogleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         try {
@@ -11,6 +14,16 @@ const Login = () => {
         } catch (error) {
             console.error("Error signing in with Google", error);
             alert("Failed to sign in with Google. Please ensure pop-ups are enabled and you have enabled Google Sign-In in your Firebase project.");
+        }
+    };
+
+    const handleAdminSignIn = async (e) => {
+        e.preventDefault();
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            console.error("Error signing in with email and password", error);
+            alert("Failed to sign in. Please check your email and password.");
         }
     };
 
@@ -26,6 +39,35 @@ const Login = () => {
                     <FcGoogle className="mr-3 text-2xl" />
                     Sign in with Google
                 </button>
+
+                <div className="my-6 flex items-center">
+                    <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <span className="mx-4 text-gray-500 dark:text-gray-400">Or</span>
+                    <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+
+                <form onSubmit={handleAdminSignIn}>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Admin Email"
+                        className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 mb-4 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                        className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 mb-4 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button 
+                        type="submit"
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
+                    >
+                        Sign in as Admin
+                    </button>
+                </form>
             </div>
         </div>
     );
