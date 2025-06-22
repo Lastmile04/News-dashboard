@@ -3,13 +3,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBaJotG3oOtxzC7NE7L_CvJtlVL49VPcUs",
-  authDomain: "news-dashboard-9f342.firebaseapp.com",
-  projectId: "news-dashboard-9f342",
-  storageBucket: "news-dashboard-9f342.appspot.com", // Corrected storage bucket format
-  messagingSenderId: "1046617484875",
-  appId: "1:1046617484875:web:674760f285f50981a6e7ce",
-  measurementId: "G-BWVC9VTV9P"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID // optional
 };
 
 const app = initializeApp(firebaseConfig);

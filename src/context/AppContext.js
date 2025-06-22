@@ -59,7 +59,11 @@ const AppProvider = ({ children }) => {
                 const data = await response.json();
 
                 if (data.status === "ok") {
-                    let fetchedArticles = data.articles.map((article, index) => ({ ...article, id: `${article.url}-${index}` }));
+                    let fetchedArticles = data.articles.map((article, index) => ({
+                        ...article,
+                        id: `${article.url}-${index}`,
+                        sentiment: typeof article.sentiment === 'number' ? article.sentiment : null // Ensure sentiment always exists
+                    }));
 
                     if (filters.author) {
                         fetchedArticles = fetchedArticles.filter(article => 
